@@ -1,0 +1,191 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Custom Brand Colors */
+    --brand-green: 152 100% 30%;
+    /* #009B4D */
+    --brand-yellow: 48 100% 50%;
+    /* #FFCC00 */
+    --brand-ivory: 45 71% 96%;
+    /* #FAF5E9 */
+
+    /* Theme Colors */
+    --background: 45 71% 96%;
+    /* Ivory background */
+    --foreground: 152 30% 15%;
+    /* Dark green text */
+
+    --card: 0 0% 100%;
+    /* White cards */
+    --card-foreground: 152 30% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 152 30% 15%;
+
+    --primary: 152 100% 30%;
+    /* Green primary */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 48 100% 50%;
+    /* Yellow secondary */
+    --secondary-foreground: 152 30% 15%;
+
+    --muted: 45 40% 92%;
+    --muted-foreground: 152 15% 40%;
+
+    --accent: 48 100% 50%;
+    /* Yellow accent */
+    --accent-foreground: 152 30% 15%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 152 20% 85%;
+    --input: 152 20% 90%;
+    --ring: 152 100% 30%;
+
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-bold tracking-tight;
+  }
+}
+
+@layer utilities {
+
+  /* Premium Gradients */
+  .gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(152 100% 25%) 100%);
+  }
+
+  .gradient-accent {
+    background: linear-gradient(135deg, hsl(var(--accent)) 0%, hsl(48 100% 45%) 100%);
+  }
+
+  .gradient-mesh {
+    background:
+      radial-gradient(at 0% 0%, hsla(152, 100%, 30%, 0.1) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(48, 100%, 50%, 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(152, 100%, 30%, 0.1) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(48, 100%, 50%, 0.1) 0px, transparent 50%);
+  }
+
+  /* Glass Effect */
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .glass-dark {
+    background: rgba(0, 155, 77, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 155, 77, 0.1);
+  }
+
+  /* Animations */
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+
+  .shimmer {
+    animation: shimmer 2s infinite;
+    background: linear-gradient(to right,
+        transparent 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        transparent 100%);
+    background-size: 1000px 100%;
+  }
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+
+    0%,
+    100% {
+      box-shadow: 0 0 20px rgba(0, 155, 77, 0.3);
+    }
+
+    50% {
+      box-shadow: 0 0 30px rgba(0, 155, 77, 0.5);
+    }
+  }
+
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  /* Hover Effects */
+  .hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px -10px rgba(0, 155, 77, 0.3);
+  }
+
+  /* Custom Scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+    border-radius: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary));
+    border-radius: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: hsl(152 100% 25%);
+  }
+}
