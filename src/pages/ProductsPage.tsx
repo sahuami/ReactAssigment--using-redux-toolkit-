@@ -5,7 +5,7 @@ import { ProductDetailDialog } from '../components/ProductDetailDialog';
 import { Button } from '../components/ui/button';
 import { useAppDispatch } from '../hooks';
 import { logout } from '../features/auth/authSlice';
-import { LogOut, RefreshCw, ShoppingBag, Search, Filter } from 'lucide-react';
+import { LogOut, RefreshCw, ShoppingBag, Search, Filter, ChevronDown } from 'lucide-react';
 import { Input } from '../components/ui/input';
 
 export default function ProductsPage() {
@@ -97,7 +97,9 @@ export default function ProductsPage() {
       <Filter className="w-4 h-4 text-primary" />
       <h3 className="font-semibold text-sm">Filter by Category</h3>
      </div>
-     <div className="flex flex-wrap gap-2">
+
+     {/* Desktop View - Button Group */}
+     <div className="hidden md:flex flex-wrap gap-2">
       {categories.map((category) => (
        <Button
         key={category}
@@ -112,6 +114,22 @@ export default function ProductsPage() {
         {category === 'all' ? 'All Products' : category.charAt(0).toUpperCase() + category.slice(1)}
        </Button>
       ))}
+     </div>
+
+     {/* Mobile View - Simple Dropdown */}
+     <div className="md:hidden relative">
+      <select
+       value={selectedCategory}
+       onChange={(e) => setSelectedCategory(e.target.value)}
+       className="w-full h-10 pl-3 pr-10 appearance-none border border-primary/20 rounded-lg bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm"
+      >
+       {categories.map((category) => (
+        <option key={category} value={category}>
+         {category === 'all' ? 'All Products' : category.charAt(0).toUpperCase() + category.slice(1)}
+        </option>
+       ))}
+      </select>
+      <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
      </div>
     </div>
 
