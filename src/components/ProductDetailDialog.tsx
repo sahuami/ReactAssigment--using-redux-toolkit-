@@ -3,8 +3,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { useGetProductQuery, useUpdateProductMutation, useDeleteProductMutation } from '../services/productsApi';
-import type { Product } from '../services/productsApi';
+import { useAppDispatch, useAppSelector } from '../hooks';
+import { fetchProductById, updateProduct, deleteProduct, clearCurrentProduct } from '../features/products/productSlice';
+import type { Product } from '../features/products/productSlice';
 import { Loader2, Trash2, Edit2, Star } from 'lucide-react';
 
 interface ProductDetailDialogProps {
@@ -14,24 +15,29 @@ interface ProductDetailDialogProps {
 }
 
 export function ProductDetailDialog({ productId, open, onOpenChange }: ProductDetailDialogProps) {
- const { data: product, isLoading, isError } = useGetProductQuery(String(productId), {
-  skip: !productId,
- });
+ const dispatch = useAppDispatch();
+ const { currentProduct: product, status } = useAppSelector((state) => state.products);
 
- const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
- const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
+ const isLoading = status === 'loading' && !product;
+ const isError = status === 'failed';
+ const [localUpdating, setLocalUpdating] = useState(false);
+ const [localDeleting, setLocalDeleting] = useState(false);
 
  const [isEditing, setIsEditing] = useState(false);
  const [editForm, setEditForm] = useState<Partial<Product>>({});
  const [isDeleteConfirming, setIsDeleteConfirming] = useState(false);
 
  useEffect(() => {
-  if (open) {
+  if (open && productId) {
+   dispatch(fetchProductById(String(productId)));
+  }
+  if (!open) {
+   dispatch(clearCurrentProduct());
    setIsEditing(false);
    setIsDeleteConfirming(false);
    setEditForm({});
   }
- }, [open]);
+ }, [open, productId, dispatch]);
 
  useEffect(() => {
   if (product) {
@@ -46,25 +52,33 @@ export function ProductDetailDialog({ productId, open, onOpenChange }: ProductDe
 
  const handleUpdate = async () => {
   if (!productId) return;
+  setLocalUpdating(true);
   try {
-   await updateProduct({
-    id: productId,
-    ...editForm,
-    price: editForm.price !== undefined ? Number(editForm.price) : undefined,
-   }).unwrap();
+   await dispatch(
+    updateProduct({
+     id: productId,
+     ...editForm,
+     price: editForm.price !== undefined ? Number(editForm.price) : undefined,
+    })
+   ).unwrap();
    setIsEditing(false);
   } catch (err) {
    console.error('Failed to update product', err);
+  } finally {
+   setLocalUpdating(false);
   }
  };
 
  const handleDelete = async () => {
   if (!productId) return;
+  setLocalDeleting(true);
   try {
-   await deleteProduct(productId).unwrap();
+   await dispatch(deleteProduct(productId)).unwrap();
    onOpenChange(false);
   } catch (err) {
    console.error('Failed to delete product', err);
+  } finally {
+   setLocalDeleting(false);
   }
  };
 
@@ -188,17 +202,17 @@ export function ProductDetailDialog({ productId, open, onOpenChange }: ProductDe
          <Button
           variant="ghost"
           onClick={() => setIsEditing(false)}
-          disabled={isUpdating}
+          disabled={localUpdating}
           className="hover:bg-muted"
          >
           Cancel
          </Button>
          <Button
           onClick={handleUpdate}
-          disabled={isUpdating}
+          disabled={localUpdating}
           className="gradient-primary text-white shadow-lg hover:shadow-xl"
          >
-          {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {localUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           💾 Save Changes
          </Button>
         </>
@@ -219,10 +233,10 @@ export function ProductDetailDialog({ productId, open, onOpenChange }: ProductDe
             variant="destructive"
             size="sm"
             onClick={handleDelete}
-            disabled={isDeleting}
+            disabled={localDeleting}
             className="shadow-lg"
            >
-            {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {localDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Yes, Delete
            </Button>
           </div>

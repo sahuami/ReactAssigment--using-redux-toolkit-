@@ -1,32 +1,48 @@
-import { useState, useMemo } from 'react';
-import { useGetProductsQuery } from '../services/productsApi';
+import { useState, useMemo, useEffect } from 'react';
 import { ProductCard } from '../components/ProductCard';
 import { ProductDetailDialog } from '../components/ProductDetailDialog';
 import { Button } from '../components/ui/button';
-import { useAppDispatch } from '../hooks';
+import { useAppDispatch, useAppSelector } from '../hooks';
 import { logout } from '../features/auth/authSlice';
 import { LogOut, RefreshCw, ShoppingBag, Search, Filter, ChevronDown } from 'lucide-react';
 import { Input } from '../components/ui/input';
+import { fetchProducts } from '../features/products/productSlice';
 
 export default function ProductsPage() {
- const { data: products, isLoading, isError, isFetching, refetch } = useGetProductsQuery();
+ const dispatch = useAppDispatch();
+ const { items: products, status, error } = useAppSelector((state) => state.products);
+
+ const isLoading = status === 'loading' && products.length === 0;
+ const isRefreshing = status === 'loading' && products.length > 0;
+ const isError = status === 'failed';
+
  const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
  const [searchTerm, setSearchTerm] = useState('');
  const [selectedCategory, setSelectedCategory] = useState<string>('all');
- const dispatch = useAppDispatch();
+
+ useEffect(() => {
+  if (status === 'idle') {
+   dispatch(fetchProducts());
+  }
+ }, [status, dispatch]);
+
+ const handleRefresh = () => {
+  dispatch(fetchProducts());
+ };
 
  // Get unique categories
  const categories = useMemo(() => {
   if (!products) return [];
-  const uniqueCategories = Array.from(new Set(products.map(p => p.category)));
+  const uniqueCategories = Array.from(new Set(products.map((p) => p.category)));
   return ['all', ...uniqueCategories];
  }, [products]);
 
  // Filter products
  const filteredProducts = useMemo(() => {
   if (!products) return [];
-  return products.filter(p => {
-   const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  return products.filter((p) => {
+   const matchesSearch =
+    p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.category.toLowerCase().includes(searchTerm.toLowerCase());
    const matchesCategory = selectedCategory === 'all' || p.category === selectedCategory;
    return matchesSearch && matchesCategory;
@@ -60,11 +76,11 @@ export default function ProductsPage() {
       <Button
        variant="ghost"
        size="icon"
-       onClick={() => refetch()}
+       onClick={handleRefresh}
        title="Refresh Data"
        className="hover:bg-primary/10"
       >
-       <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin text-primary' : ''}`} />
+       <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-primary' : ''}`} />
       </Button>
       <Button
        variant="outline"
@@ -103,12 +119,13 @@ export default function ProductsPage() {
       {categories.map((category) => (
        <Button
         key={category}
-        variant={selectedCategory === category ? "default" : "outline"}
+        variant={selectedCategory === category ? 'default' : 'outline'}
         size="sm"
         onClick={() => setSelectedCategory(category)}
-        className={selectedCategory === category
-         ? "gradient-primary text-white shadow-md"
-         : "border-primary/20 hover:border-primary hover:bg-primary/5"
+        className={
+         selectedCategory === category
+          ? 'gradient-primary text-white shadow-md'
+          : 'border-primary/20 hover:border-primary hover:bg-primary/5'
         }
        >
         {category === 'all' ? 'All Products' : category.charAt(0).toUpperCase() + category.slice(1)}
@@ -146,12 +163,9 @@ export default function ProductsPage() {
       </div>
       <h2 className="text-2xl font-bold mb-2">Something went wrong</h2>
       <p className="text-muted-foreground mb-6 max-w-md">
-       Failed to load products. Please check your connection and try again.
+       {error || 'Failed to load products. Please check your connection and try again.'}
       </p>
-      <Button
-       onClick={() => refetch()}
-       className="gradient-primary text-white shadow-lg"
-      >
+      <Button onClick={handleRefresh} className="gradient-primary text-white shadow-lg">
        <RefreshCw className="mr-2 h-4 w-4" />
        Try Again
       </Button>
@@ -163,9 +177,7 @@ export default function ProductsPage() {
         <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
          Products
         </h2>
-        <p className="text-muted-foreground text-sm mt-1">
-         Discover amazing products at great prices
-        </p>
+        <p className="text-muted-foreground text-sm mt-1">Discover amazing products at great prices</p>
        </div>
        <div className="glass-dark px-4 py-2 rounded-full border border-primary/10">
         <span className="text-sm font-semibold text-primary">{filteredProducts?.length || 0}</span>
@@ -195,11 +207,7 @@ export default function ProductsPage() {
       ) : (
        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {filteredProducts?.map((product) => (
-         <ProductCard
-          key={product.id}
-          product={product}
-          onClick={(p) => setSelectedProductId(p.id)}
-         />
+         <ProductCard key={product.id} product={product} onClick={(p) => setSelectedProductId(p.id)} />
         ))}
        </div>
       )}
